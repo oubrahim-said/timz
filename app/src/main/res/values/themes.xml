@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Timz" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">#ffc107</item>
+    </style>
+
+    <style name="Theme.Timz" parent="Base.Theme.Timz" />
+    <style name="CustomSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:dropDownHeight">150dp</item> <!-- Adjust height for 3 items -->
+        <item name="borderWidth">1dp</item>
+    </style>
+    <style name="buttonStyle" parent="Widget.Material3.Button.IconButton.Filled">
+        <item name="android:animateOnClick">true</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">#FFC107</item>
+    </style>
+    <style name="recreateButtonStyle" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="borderWidth">0dp</item>
+        <item name="strokeColor">@android:color/transparent</item>
+        <item name="android:textColor">#ffc107</item>
+    </style>
+</resources>
