@@ -30,6 +30,7 @@ class FirstPage : AppCompatActivity() {
 
     lateinit var FormateurSpinner: Spinner
     lateinit var DaySpinner: Spinner
+    lateinit var SalleSpinner: Spinner
     lateinit var daysOfWeek: ArrayList<String>
     lateinit var buttonAddSceances: Button
     lateinit var tableLayout: TableLayout
@@ -65,6 +66,7 @@ class FirstPage : AppCompatActivity() {
         nestedScrollView.isNestedScrollingEnabled = true
 
         buttonResetSchedule = findViewById(R.id.recreateSchedul)
+        SalleSpinner = findViewById(R.id.salle_spinner)
         buttonGenerateSchedule = findViewById(R.id.generate_the_schedule)
         FormateurSpinner = findViewById(R.id.formateur_spinner)
         DaySpinner = findViewById(R.id.day_spinner)
@@ -102,23 +104,27 @@ class FirstPage : AppCompatActivity() {
             schedules.forEach { schedule ->
                 schedule.days.forEach { (day, times) ->
                     times.forEach { time ->
-
-                        var salle = assignSalleToSchedule(salles,insertedSeances,day,time)
-
-                        var an = filieres.find { it.name == schedule.filiere }?.anne
-                        if(an == null) an = 1
-                        var key = mutableListOf(schedule.teacher, schedule.filiere, day, time, salle)
-                        var dejaExiste = insertedSeances.find { it[0] == schedule.teacher && it[1] == schedule.filiere && it[2] == day && it[3] == time }
-                        if (dejaExiste == null) {
-                            addSchudleOfFormateur(schedule.teacher, schedule.filiere, day, time, an, salle)
-                            ajouterSeancesAuTableau(schedule.teacher, schedule.filiere, day, time, salle)
-                            insertedSeances.add(key) // Mark as processed
+                        val selectedSalle = SalleSpinner.selectedItem.toString()
+                        if (selectedSalle != "Sélectionner une Salle") {
+                            // Use selected salle directly
+                            val salle = selectedSalle
+                            val an = filieres.find { it.name == schedule.filiere }?.anne ?: 1
+                            val key = mutableListOf(schedule.teacher, schedule.filiere, day, time, salle)
+                            val dejaExiste = insertedSeances.find { it[0] == schedule.teacher && it[1] == schedule.filiere && it[2] == day && it[3] == time }
+                            if (dejaExiste == null) {
+                                addSchudleOfFormateur(schedule.teacher, schedule.filiere, day, time, an, salle)
+                                ajouterSeancesAuTableau(schedule.teacher, schedule.filiere, day, time, salle)
+                                insertedSeances.add(key) // Mark as processed
+                            }
+                        } else {
+                            Toast.makeText(this@FirstPage, "Veuillez sélectionner une salle!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
             Toast.makeText(this@FirstPage, "Scéances ajoutées: ${schedules.size} seances", Toast.LENGTH_LONG).show()
-        } // Button for add info to table and send it to database
+        }
+        // Button for add info to table and send it to database
         buttonResetSchedule.setOnClickListener {
             AlertDialog.Builder(this@FirstPage)
                 .setTitle("Alerte")
@@ -152,12 +158,13 @@ class FirstPage : AppCompatActivity() {
         RetrofitClient.instance.getDatabase().enqueue(object: Callback<Database> {
             override fun onResponse(call: Call<Database>, response: Response<Database>){
                 if(response.isSuccessful){
-                    response.body().let {
-                        teachers = it?.teachers ?: emptyList()
-                        salles = it?.salles ?: emptyList()
-                        filieres = it?.filieres ?: emptyList()
+                    response.body()?.let {
+                        teachers = it.teachers ?: emptyList()
+                        salles = it.salles ?: emptyList()
+                        filieres = it.filieres ?: emptyList()
 
-                        // spinner de formateurs
+
+
                         val teachersName: ArrayList<String> = arrayListOf("Selectionner un Formateur:")
                         teachers?.forEach { teachersName.add(it.name) }
                         val FormateurAdapter = object : ArrayAdapter<String>(this@FirstPage,android.R.layout.simple_spinner_dropdown_item,teachersName) {
@@ -187,15 +194,35 @@ class FirstPage : AppCompatActivity() {
                             override fun onNothingSelected(parent: AdapterView<*>) {}
                         }
 
-                    }
+                        // Populate the salles spinner
+                        val salleNames = arrayListOf("Sélectionner une Salle")
+                        salles.forEach { salle -> salleNames.add(salle.name) }
 
+                        val salleAdapter = ArrayAdapter<String>(this@FirstPage, android.R.layout.simple_spinner_dropdown_item, salleNames)
+                        SalleSpinner.adapter = salleAdapter
+
+                        // Setup SalleSpinner item selected listener
+                        SalleSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                                if (position != 0) {
+                                    // When a salle is selected
+                                    val selectedSalle = salles[position - 1] // Adjusting for the "Sélectionner une Salle" placeholder
+                                    // You can use this salle in your logic if needed
+                                }
+                            }
+
+                            override fun onNothingSelected(parent: AdapterView<*>) {}
+                        }
+                    }
                 }
             }
-            override fun onFailure(call: Call<Database>, t:Throwable){
+
+            override fun onFailure(call: Call<Database>, t: Throwable){
                 Log.i(TAG, "onFailure: $t")
             }
         })
-    } // get data from database
+    }
+    // get data from database
     private fun addSchudleOfFormateur(teacher: String, filier: String, day:   String, time: String, anne: Int?, salle: String){
         RetrofitClient.instance.setshudle(teacher, filier, day, time, anne, salle).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

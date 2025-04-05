@@ -20,12 +20,10 @@ class ScheduleAdapter(private val myList: MutableList<ScheduleCallback>, val con
         val tableLayout: TableLayout = itemView.findViewById(R.id.scheduleTable)
         val textView: TextView = itemView.findViewById(R.id.name_of_teach)
     }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.table_item_layout, parent, false)
         return ScheduleViewHolder(view)
     }
-
     override fun getItemCount(): Int {
         return teacherList.size
     }

@@ -43,6 +43,12 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:spinnerMode="dropdown" />
+            <Spinner
+                android:id="@+id/salle_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:spinnerMode="dropdown" />
 
             <Button
                 android:id="@+id/buttonAddSeances"
